@@ -8,7 +8,7 @@ video_dir = "videos"
 # Set the date ranges and corresponding directories for additional videos
 date_ranges = {
     (date(2022, 12, 1), date(2022, 12, 31)): "videos/natale",
-    (date(2022, 10, 1), date(2022, 10, 31)): "videos/estate",
+    (date(2022, 6, 1), date(2022, 9, 21)): "videos/estate",
 }
 
 # Get the current date
