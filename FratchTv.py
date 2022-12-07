@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import random
 from datetime import date
@@ -48,5 +49,8 @@ for date_range in date_ranges:
 # setting media list to the media player
 media_player.set_media_list(media_list)
             
-# Play the video files
-media_player.play()
+
+while True:
+    # Play the video files
+    media_player.play()
+    pass

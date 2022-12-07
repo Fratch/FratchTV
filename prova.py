@@ -1,8 +1,23 @@
 # importing vlc module
 import vlc
 
+# importing time module
+import time
+
+
 # creating vlc media player object
-media = vlc.MediaPlayer("/Users/alessandrofraticelli/Documents/GitHub/FratchTV/videos/blank vhs covers were kinda beautiful-e9DfSCk-6Ko.webm")
+media_player = vlc.MediaPlayer()
+
+# media object
+media = vlc.Media("videos/HeWasNeverThere.mp4")
+
+# setting media to the media player
+media_player.set_media(media)
+
 
 # start playing video
-media.play()
+media_player.play()
+
+# wait so the video can be played for 5 seconds
+# irrespective for length of video
+time.sleep(5)
