@@ -1,6 +1,8 @@
 import os
 import random
-from datetime import datetime, date
+from datetime import date
+import vlc
+import time
 
 # Set the directory where the video files are located
 video_dir = "videos"
@@ -8,11 +10,17 @@ video_dir = "videos"
 # Set the date ranges and corresponding directories for additional videos
 date_ranges = {
     (date(2022, 12, 1), date(2022, 12, 31)): "videos/natale",
-    (date(2022, 6, 1), date(2022, 9, 21)): "videos/estate",
+    (date(2022, 10, 1), date(2022, 10, 31)): "videos/estate",
 }
 
-# Get the current date
-today = date.today()
+# Create a VLC player
+media_player = vlc.MediaPlayer()
+
+# Create Instance class object
+player = vlc.Instance()
+
+# Create a media list object
+media_list = vlc.MediaList()
 
 # Get a list of all video files in the directory
 video_files = [f for f in os.listdir(video_dir) if f.endswith(".mp4") or f.endswith(".avi") or f.endswith(".mkv")]
@@ -20,20 +28,26 @@ video_files = [f for f in os.listdir(video_dir) if f.endswith(".mp4") or f.endsw
 # Shuffle the list of video files
 random.shuffle(video_files)
 
-# Create a queue for the video files
-queue = video_files
+# Add the files to the VLC player's queue
+for f in video_files:
+    media_list.add_media(os.path.join(video_dir, f))
+
+# Get the current date
+today = date.today()
 
 # Check if the current date is within any of the specified date ranges
-for daterange, dir in date_ranges.items():
-    start, end = daterange
+for date_range in date_ranges:
+    start, end = date_range
     if start <= today <= end:
-        # If the current date is within the date range, add the videos from the corresponding directory to the queue
-        additional_videos = [f for f in os.listdir(dir) if f.endswith(".mp4") or f.endswith(".avi")]
-        queue += additional_videos
+        # If the current date is within the date range, add the video files from the corresponding folder
+        folder_path = date_ranges[date_range]
+        files = [f for f in os.listdir(folder_path) if f.endswith(".mp4") or f.endswith(".avi") or f.endswith(".mkv")]
+        for f in files:
+            media_list.add_media(os.path.join(folder_path, f))
 
-# Play the videos in the queue
-for video in queue:
-    # Use a media player library or command-line tool to play the video file (e.g. VLC, PyMediaPlayer)
-    # For example, using VLC:
-    os.system('vlc ' + video)
-    pass
+# Play the video files
+media_player.play()
+
+# wait so the video can be played for 5 seconds
+# irrespective for length of video
+time.sleep(5)
