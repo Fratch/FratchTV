@@ -2,6 +2,7 @@ import os
 import random
 from datetime import date
 import vlc
+import time
 
 # Set the directory where the video files are located
 video_dir = "videos"
@@ -13,7 +14,13 @@ date_ranges = {
 }
 
 # Create a VLC player
-player = vlc.MediaPlayer()
+media_player = vlc.MediaListPlayer()
+
+# Create Instance class object
+player = vlc.Instance()
+
+# Create a media list object
+media_list = vlc.MediaList()
 
 # Get a list of all video files in the directory
 video_files = [f for f in os.listdir(video_dir) if f.endswith(".mp4") or f.endswith(".avi") or f.endswith(".mkv")]
@@ -23,7 +30,7 @@ random.shuffle(video_files)
 
 # Add the files to the VLC player's queue
 for f in video_files:
-    player.add_media(os.path.join(video_dir, f))
+    media_list.add_media(os.path.join(video_dir, f))
 
 # Get the current date
 today = date.today()
@@ -34,9 +41,12 @@ for date_range in date_ranges:
     if start <= today <= end:
         # If the current date is within the date range, add the video files from the corresponding folder
         folder_path = date_ranges[date_range]
-        files = [f for f in os.listdir(folder_path) if f.endswith(".mp4")]
+        files = [f for f in os.listdir(folder_path) if f.endswith(".mp4") or f.endswith(".avi") or f.endswith(".mkv")]
         for f in files:
-            player.add_media(os.path.join(folder_path, f))
+            media_list.add_media(os.path.join(folder_path, f))
 
+# setting media list to the media player
+media_player.set_media_list(media_list)
+            
 # Play the video files
-player.play()
+media_player.play()
