@@ -14,7 +14,7 @@ date_ranges = {
 }
 
 # Create a VLC player
-media_player = vlc.MediaPlayer()
+media_player = vlc.MediaListPlayer()
 
 # Create Instance class object
 player = vlc.Instance()
@@ -45,9 +45,8 @@ for date_range in date_ranges:
         for f in files:
             media_list.add_media(os.path.join(folder_path, f))
 
+# setting media list to the media player
+media_player.set_media_list(media_list)
+            
 # Play the video files
 media_player.play()
-
-# wait so the video can be played for 5 seconds
-# irrespective for length of video
-time.sleep(5)
