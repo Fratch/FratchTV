@@ -50,7 +50,10 @@ for date_range in date_ranges:
 media_player.set_media_list(media_list)
             
 
+
+# Play the video files
+media_player.play()
 while True:
-    # Play the video files
-    media_player.play()
     pass
+
+
