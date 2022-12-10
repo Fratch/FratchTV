@@ -11,7 +11,8 @@ video_dir = "videos"
 # Set the date ranges and corresponding directories for additional videos
 date_ranges = {
     (date(2022, 12, 1), date(2022, 12, 31)): "videos/natale",
-    (date(2022, 10, 1), date(2022, 10, 31)): "videos/estate",
+    (date(2022, 6, 1), date(2022, 8, 31)): "videos/estate",
+    (date(2022, 2, 14), date(2022, 2, 14)): "videos/sanvalentino",
 }
 
 # Set the hour ranges and corresponding directories for additional videos
@@ -19,8 +20,6 @@ hour_ranges = {
     (6,18): "videos/giorno",
     (18,6): "videos/notte",
 }
-
-# TODO: Cartelle per orari della giornata
 
 # Create a VLC player
 media_player = vlc.MediaListPlayer()
@@ -50,7 +49,7 @@ now = time.localtime().tm_hour
 # Check if the current date is within any of the specified date ranges
 for date_range in date_ranges:
     start, end = date_range
-    if start <= today <= end:
+    if today.month >= start.month and today.month <= end.month and today.day >= start.day and today.day <= end.day:
         # If the current date is within the date range, add the video files from the corresponding folder
         folder_path = date_ranges[date_range]
         files = [f for f in os.listdir(folder_path) if f.endswith(".mp4") or f.endswith(".avi") or f.endswith(".mkv") or f.endswith(".webm")]
@@ -74,6 +73,9 @@ media_player.set_media_list(media_list)
 # Play the video files
 media_player.play()
 while True:
+    # Wait for the user to press a key to skip to the next video
+    input("Press enter to skip to the next video in the playlist...")
+
+    # Skip to the next video in the playlist
+    media_player.next()
     pass
-
-
