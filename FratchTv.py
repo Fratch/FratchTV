@@ -16,6 +16,7 @@ DATE_RANGES = {
     (date(2022, 12, 1), date(2022, 12, 31)): "videos/natale",
     (date(2022, 6, 1), date(2022, 8, 31)): "videos/estate",
     (date(2022, 2, 14), date(2022, 2, 14)): "videos/sanvalentino",
+    (date(2022, 7, 10), date(2022, 7, 10)): "videos/compleanno",
 }
 
 # Set the hour ranges and corresponding directories for additional videos
@@ -51,6 +52,11 @@ def main():
         # Get a list of video files in the default directory
         video_files = get_video_files(DEFAULT_VIDEO_DIR)
 
+        # Check if the default directory contains any video files
+        if not video_files:
+            print("Error: The default video directory does not contain any video files.")
+            return
+
         # Shuffle the list of video files
         random.shuffle(video_files)
 
@@ -68,7 +74,10 @@ def main():
             if start.month <= today.month <= end.month and start.day <= today.day <= end.day:
                 # If the current date is within the date range, add the video files from the corresponding folder
                 folder_path = DATE_RANGES[date_range]
-                add_files_to_media_list(media_list, folder_path)
+                try:
+                    add_files_to_media_list(media_list, folder_path)
+                except FileNotFoundError:
+                    print(f"Error: The directory {folder_path} does not exist.")
 
         # Check if the current hour is within any of the specified hour ranges
         for hour_range in HOUR_RANGES:
@@ -76,23 +85,29 @@ def main():
             if start <= now <= end:
                 # If the current hour is within the date range, add the video files from the corresponding folder
                 folder_path = HOUR_RANGES[hour_range]
-                add_files_to_media_list(media_list, folder_path)
+                try:
+                    add_files_to_media_list(media_list, folder_path)
+                except FileNotFoundError:
+                    print(f"Error: The directory {folder_path} does not exist.")
 
         # Set the media list to the media player
         media_player.set_media_list(media_list)
 
         # Play the video files
-        media_player.play()
-        while True:
-            # Wait for the user to press a key to skip to the next video
-            input("Press enter to skip to the next video in the playlist...\n")
+        try:
+            media_player.play()
+            while True:
+                # Wait for the user to press a key to skip to the next video
+                input("Press enter to skip to the next video in the playlist...\n")
 
-            # Skip to the next video in the playlist
-            media_player.next()
+                # Skip to the next video in the playlist
+                media_player.next()
+        except vlc.VLCException as e:
+            print(f"Error: An error occurred while playing the video files: {e}")
         
     except Exception as e:
-        # Catch any exceptions that occur and print an error message
-        print("An error occurred:", str(e))
-    
+        # Catch any unexpected exceptions and print an error message
+        print(f"Error: An unexpected exception occurred: {e}")
+
 if __name__ == "__main__":
     main()
