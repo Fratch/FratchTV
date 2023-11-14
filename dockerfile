@@ -1,10 +1,17 @@
-FROM python:3.8-slim-buster
+# Dockerfile
+FROM node:14
 
-RUN apt-get update && apt-get install -y vlc-bin vlc-plugin-base vlc-plugin-video-output python3-vlc
+# Install ffmpeg for video format support
+RUN apt-get update && apt-get install -y ffmpeg
 
-COPY FratchTv.py /app/FratchTv.py
-COPY videos /app/videos
+WORKDIR /usr/src/app
 
-WORKDIR /app
+COPY package*.json ./
 
-CMD ["python3", "FratchTv.py"]
+RUN npm install
+
+COPY . .
+
+EXPOSE 1997
+
+CMD [ "npm", "start" ]
