@@ -3,16 +3,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="height=device-height, initial-scale=1.0">
   <title>Fratch TV</title>
   <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #videoPlayer {
+      max-width: 100%;
+    }
+
+    #playButton {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #007bff;
+      color: #fff;
+      font-size: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+  </style>
 </head>
 <body>
   <video id="videoPlayer" class="video-js" controls>
     Your browser does not support the video tag.
   </video>
-  <button id="playButton">Play</button>
+  <button id="playButton" onclick="handlePlayClick()">
+    <span>&#9654;</span> <!-- Unicode character for play -->
+  </button>
   <script src="https://vjs.zencdn.net/7.15.4/video.js"></script>
   <script src="/scripts/playVideos.js"></script>
+  <script>
+    function handlePlayClick() {
+      var playButton = document.getElementById('playButton');
+      playButton.style.display = 'none';
+    }
+  </script>
 </body>
 </html>
