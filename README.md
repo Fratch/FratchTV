@@ -1,6 +1,6 @@
 # Fratch TV
 
-Fratch TV is a simple Node.js application that serves a web page for playing random videos. It utilizes Docker to containerize the application and includes video format support through the installation of FFmpeg.
+Fratch TV is a simple Node.js application that serves a web page for playing random videos. It utilizes Docker to containerize the application.
 
 ## Getting Started
 
