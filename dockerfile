@@ -1,17 +1,21 @@
 # Dockerfile
+# Use an official Node.js runtime as a base image
 FROM node:14
 
-# Install ffmpeg for video format support
-RUN apt-get update && apt-get install -y ffmpeg
+# Set the working directory inside the container
+WORKDIR /app
 
-WORKDIR /usr/src/app
-
+# Copy package.json and package-lock.json to the container
 COPY package*.json ./
 
+# Install Node.js dependencies
 RUN npm install
 
+# Copy the rest of the application files to the container
 COPY . .
 
+# Expose the port that the application will run on
 EXPOSE 1997
 
-CMD [ "npm", "start" ]
+# Define the command to run the application
+CMD ["node", "index.js"]
