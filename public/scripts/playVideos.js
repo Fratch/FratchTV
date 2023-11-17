@@ -1,6 +1,7 @@
 // public/scripts/playVideos.js
 const playButton = document.getElementById('playButton');
-let videoPlayer; // Declare videoPlayer outside the functions to make it accessible
+let videoPlayer = videojs('videoPlayer', { fluid: true }); // Initialize videoPlayer here
+
 let shuffledVideos;
 let currentIndex = 0;
 
@@ -14,13 +15,12 @@ playButton.addEventListener('click', () => {
 });
 
 function playVideosRandomly() {
-  // Initialize the videoPlayer instance
-  videoPlayer = videojs('videoPlayer', { fluid: true });
+  // No need to reinitialize videoPlayer here
 
-  // Add 'ended' event listener to the player instance
+  // Add 'ended' event listener to the player instance only once
   videoPlayer.on('ended', playNextVideo);
 
-  // Add keyboard controls
+  // Add keyboard controls only once
   document.addEventListener('keydown', handleKeyDown);
 
   // Start playing the first video
@@ -46,7 +46,7 @@ function handleKeyDown(event) {
       break;
     case 'ArrowLeft':
       // Left arrow key: play the previous video (if available)
-      currentIndex = (currentIndex - 2 + shuffledVideos.length) % shuffledVideos.length;
+      currentIndex = (currentIndex - 1 + shuffledVideos.length) % shuffledVideos.length;
       playNextVideo();
       break;
     case 'f':
@@ -63,7 +63,6 @@ function handleKeyDown(event) {
       break;
   }
 }
-
 
 function shuffleArray(array) {
   let currentIndex = array.length, randomIndex;
