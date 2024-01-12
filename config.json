@@ -1,0 +1,16 @@
+{
+  "namedDateIntervals": [
+    { "name": "estate", "start": "06-01", "end": "09-14" },
+    { "name": "sanvalentino", "start": "02-14", "end": "02-14" },
+    { "name": "inverno", "start": "12-21", "end": "03-19" },
+    { "name": "natale", "start": "12-01", "end": "12-26" },
+    { "name": "halloween", "start": "10-30", "end": "10-31" }
+  ],
+  "namedTimeIntervals": [
+    { "name": "giorno", "start": "06:00", "end": "18:59" },
+    { "name": "mattina", "start": "06:00", "end": "13:59" },
+    { "name": "pomeriggio", "start": "14:00", "end": "17:59" },
+    { "name": "sera", "start": "18:00", "end": "21:59" },
+    { "name": "notte", "start": "22:00", "end": "05:59" }
+  ]
+}

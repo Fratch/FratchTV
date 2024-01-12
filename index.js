@@ -30,38 +30,67 @@ async function getVideoFiles() {
     const files = await fs.readdir(videoFolder);
     const videoFiles = filterVideoFiles(files);
 
-    const overlappingIntervals = getOverlappingIntervals();
+    const [intervalVideoFiles, timeVideoFiles] = await Promise.all([
+        getFilesInNamedIntervals(),
+        getFilesInNamedTimes(),
+    ]);
+
+    return [...videoFiles, ...intervalVideoFiles, ...timeVideoFiles];
+}
+
+function filterVideoFiles(files) {
+    const videoExtensions = ['.mp4', '.avi', '.mkv', '.webm'];
+    return files.filter(file => videoExtensions.some(ext => file.endsWith(ext)));
+}
+
+async function getFilesInInterval(intervalFolder) {
+    try {
+        const relativePath = path.relative(videoFolder, intervalFolder);
+        const intervalFiles = await fs.readdir(intervalFolder);
+
+        return intervalFiles
+            .filter(file => file.endsWith('.mp4') || file.endsWith('.webm'))
+            .map(videoFile => path.join(relativePath, videoFile));
+    } catch (error) {
+        console.error('Error reading/creating interval video folder:', error);
+        throw error;
+    }
+}
+
+async function getFilesInNamedIntervals() {
+    const today = new Date();
+    const overlappingIntervals = getOverlappingIntervals(today);
+
     const intervalPromises = overlappingIntervals.map(interval =>
         getFilesInInterval(path.join(videoFolder, interval.name))
     );
 
-    const overlappingTimes = getOverlappingTimes();
+    const intervalVideoFiles = (await Promise.all(intervalPromises)).flat();
+    return intervalVideoFiles;
+}
+
+async function getFilesInNamedTimes() {
+    const currentHour = new Date().getHours();
+    const overlappingTimes = getOverlappingTimes(currentHour);
+
     const timePromises = overlappingTimes.map(time =>
         getFilesInInterval(path.join(videoFolder, time.name))
     );
 
-    const results = await Promise.all([...intervalPromises, ...timePromises]);
-    const intervalVideoFiles = results.flat();
-
-    return [...videoFiles, ...intervalVideoFiles];
+    const timeVideoFiles = (await Promise.all(timePromises)).flat();
+    return timeVideoFiles;
 }
 
-function filterVideoFiles(files) {
-    return files.filter(file => file.endsWith('.mp4') || file.endsWith('.avi') || file.endsWith('.mkv') || file.endsWith('.webm'));
-}
-
-function getOverlappingIntervals() {
-    const today = new Date();
-    return namedDateIntervals.filter(interval => {
+function getOverlappingIntervals(today) {
+    return config.namedDateIntervals.filter(interval => {
         const startDate = new Date(`${today.getFullYear()}-${interval.start}`);
         const endDate = new Date(`${today.getFullYear()}-${interval.end}`);
         return today >= startDate && today <= endDate;
     });
 }
 
-function getOverlappingTimes() {
-    const currentHour = new Date().getHours();
-    return namedTimeIntervals.filter(time => {
+function getOverlappingTimes(currentHour) {
+    return config.namedTimeIntervals.filter(time => {
         const startTime = parseInt(time.start.split(':')[0]);
         const endTime = parseInt(time.end.split(':')[0]);
         return (
@@ -71,20 +100,16 @@ function getOverlappingTimes() {
     });
 }
 
-async function getFilesInInterval(intervalFolder) {
-    try {
-        const intervalFiles = await fs.readdir(intervalFolder);
-        return intervalFiles
-            .filter(file => file.endsWith('.mp4') || file.endsWith('.webm'))
-            .map(videoFile => path.join(intervalFolder, videoFile));
-    } catch (error) {
-        console.error('Error reading interval video folder:', error);
-        throw error;
-    }
-}
-
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
+});
+
+process.on('SIGINT', () => {
+    console.log('Server is shutting down...');
+    server.close(() => {
+        console.log('Server has been gracefully terminated.');
+        process.exit(0);
+    });
 });
 
 app.use((err, req, res, next) => {
@@ -96,18 +121,5 @@ app.use((req, res) => {
     res.status(404).send('Not Found');
 });
 
-const namedDateIntervals = [
-    { name: 'estate', start: '06-01', end: '09-14' },
-    { name: 'sanvalentino', start: '02-14', end: '02-14' },
-    { name: 'inverno', start: '12-21', end: '03-19' },
-    { name: 'natale', start: '12-01', end: '12-26' },
-    { name: 'halloween', start: '10-30', end: '10-31' }
-];
-
-const namedTimeIntervals = [
-    { name: 'giorno', start: '06:00', end: '18:59' },
-    { name: 'mattina', start: '06:00', end: '13:59' },
-    { name: 'pomeriggio', start: '14:00', end: '17:59' },
-    { name: 'sera', start: '18:00', end: '21:59' },
-    { name: 'notte', start: '22:00', end: '05:59' }
-];
+const configPath = path.join(__dirname, 'config.json');
+const config = require(configPath);
