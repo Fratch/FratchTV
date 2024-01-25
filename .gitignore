@@ -128,7 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 *.mp4
-.DS_Store
+.node_modules
 .DS_Store
 *.mkv
 *.webm
