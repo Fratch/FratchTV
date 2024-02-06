@@ -15,12 +15,8 @@ playButton.addEventListener('click', () => {
 });
 
 function playVideosRandomly() {
-  // No need to reinitialize videoPlayer here
-
-  // Add 'ended' event listener to the player instance only once
   videoPlayer.on('ended', playNextVideo);
 
-  // Add keyboard controls only once
   document.addEventListener('keydown', handleKeyDown);
 
   // Start playing the first video
