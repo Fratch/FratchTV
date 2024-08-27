@@ -1,6 +1,6 @@
 // public/scripts/playVideos.js
 const playButton = document.getElementById('playButton');
-let videoPlayer = videojs('videoPlayer', { fluid: true }); // Initialize videoPlayer here
+let videoPlayer = videojs('videoPlayer', { fluid: true });
 
 let shuffledVideos;
 let currentIndex = 0;
@@ -15,12 +15,11 @@ playButton.addEventListener('click', () => {
 });
 
 function playVideosRandomly() {
-  // No need to reinitialize videoPlayer here
 
-  // Add 'ended' event listener to the player instance only once
   videoPlayer.on('ended', playNextVideo);
 
-  // Add keyboard controls only once
+  videoPlayer.on('error', handleVideoError);
+
   document.addEventListener('keydown', handleKeyDown);
 
   // Start playing the first video
@@ -64,8 +63,20 @@ function handleKeyDown(event) {
   }
 }
 
+function handleVideoError() {
+  // Video loading error occurred, replace the video element with an image
+  const videoPlayerContainer = document.getElementById('videoPlayer');
+  const errorImage = document.createElement('img');
+  errorImage.src = '../assets/technical-difficulties.jpg'; // Set the path to your error image
+  errorImage.alt = 'Video Error';
+  errorImage.style.width = '100%';
+  errorImage.style.height = 'auto';
+  videoPlayerContainer.replaceWith(errorImage);
+}
+
 function shuffleArray(array) {
-  let currentIndex = array.length, randomIndex;
+  let currentIndex = array.length,
+    randomIndex;
 
   while (currentIndex !== 0) {
     randomIndex = Math.floor(Math.random() * currentIndex);
