@@ -15,7 +15,6 @@ playButton.addEventListener('click', () => {
 });
 
 function playVideosRandomly() {
-
   videoPlayer.on('ended', playNextVideo);
 
   videoPlayer.on('error', handleVideoError);
