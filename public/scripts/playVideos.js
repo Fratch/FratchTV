@@ -1,59 +1,82 @@
-// public/scripts/playVideos.js
 const playButton = document.getElementById('playButton');
-let videoPlayer = videojs('videoPlayer', { fluid: true });
+const videoPlayer = videojs('videoPlayer', { fluid: true });
 
-let shuffledVideos;
+let videoQueue = [];
 let currentIndex = 0;
 
-playButton.addEventListener('click', () => {
-  fetch('/videos')
-    .then(response => response.json())
-    .then(videos => {
-      shuffledVideos = shuffleArray(videos);
-      playVideosRandomly();
-    });
-});
+/**
+ * Fetch video files from the server and shuffle them.
+ */
+async function fetchAndShuffleVideos() {
+  try {
+    const response = await fetch('/videos');
+    if (!response.ok) {
+      throw new Error('Failed to fetch videos from the server');
+    }
+    const videos = await response.json();
+    if (!Array.isArray(videos) || videos.length === 0) {
+      throw new Error('No videos available');
+    }
+    videoQueue = shuffleArray(videos);
+  } catch (error) {
+    console.error(error.message);
+    alert('An error occurred while loading videos. Please try again later.');
+  }
+}
 
-function playVideosRandomly() {
-  videoPlayer.on('ended', playNextVideo);
+/**
+ * Shuffle an array in random order.
+ * @param {Array} array - The array to shuffle.
+ * @returns {Array} - The shuffled array.
+ */
+function shuffleArray(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
 
-  videoPlayer.on('error', handleVideoError);
+/**
+ * Play the next video in the queue.
+ */
+function playNextVideo() {
+  if (videoQueue.length === 0) {
+    console.warn('Video queue is empty.');
+    return;
+  }
 
-  document.addEventListener('keydown', handleKeyDown);
+  const currentVideo = videoQueue[currentIndex];
+  videoPlayer.src({ src: `/video/${encodeURIComponent(currentVideo)}`, type: 'video/mp4' });
+  videoPlayer.play();
 
-  // Start playing the first video
+  currentIndex = (currentIndex + 1) % videoQueue.length;
+}
+
+/**
+ * Handle video playback errors by skipping to the next video.
+ */
+function handleVideoError() {
+  console.error(`Error loading video: ${videoQueue[currentIndex]}`);
   playNextVideo();
 }
 
-function playNextVideo() {
-  const currentVideo = shuffledVideos[currentIndex];
-  videoPlayer.src({ src: `/video/${encodeURIComponent(currentVideo)}`, type: 'video/mp4' });
-  videoPlayer.play();
-  currentIndex = (currentIndex + 1) % shuffledVideos.length;
-}
-
+/**
+ * Handle keyboard controls for video playback.
+ * @param {KeyboardEvent} event - The keyboard event.
+ */
 function handleKeyDown(event) {
   switch (event.key) {
-    case ' ':
-      // Space key: toggle play/pause
+    case ' ': // Spacebar: toggle play/pause
       videoPlayer.paused() ? videoPlayer.play() : videoPlayer.pause();
       break;
-    case 'ArrowRight':
-      // Right arrow key: play the next video
+    case 'ArrowRight': // Right arrow: skip to the next video
       playNextVideo();
       break;
-    case 'ArrowLeft':
-      // Left arrow key: play the previous video (if available)
-      currentIndex = (currentIndex - 1 + shuffledVideos.length) % shuffledVideos.length;
+    case 'ArrowLeft': // Left arrow: play the previous video
+      currentIndex = (currentIndex - 1 + videoQueue.length) % videoQueue.length;
       playNextVideo();
       break;
-    case 'f':
-      // 'f' key: toggle fullscreen
+    case 'f': // 'f' key: toggle fullscreen
       if (document.fullscreenElement) {
-        // If already in fullscreen, exit fullscreen
         document.exitFullscreen();
       } else {
-        // If not in fullscreen, request fullscreen
         videoPlayer.requestFullscreen();
       }
       break;
@@ -62,26 +85,23 @@ function handleKeyDown(event) {
   }
 }
 
-function handleVideoError() {
-  // Video loading error occurred, replace the video element with an image
-  const videoPlayerContainer = document.getElementById('videoPlayer');
-  const errorImage = document.createElement('img');
-  errorImage.src = '../assets/technical-difficulties.jpg'; // Set the path to your error image
-  errorImage.alt = 'Video Error';
-  errorImage.style.width = '100%';
-  errorImage.style.height = 'auto';
-  videoPlayerContainer.replaceWith(errorImage);
+/**
+ * Initialize the video player and set up event listeners.
+ */
+async function initializePlayer() {
+  await fetchAndShuffleVideos();
+
+  videoPlayer.on('ended', playNextVideo);
+  videoPlayer.on('error', handleVideoError);
+  document.addEventListener('keydown', handleKeyDown);
+
+  playNextVideo();
 }
 
-function shuffleArray(array) {
-  let currentIndex = array.length,
-    randomIndex;
-
-  while (currentIndex !== 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-  }
-
-  return array;
-}
+/**
+ * Hide the play button and start the video player.
+ */
+playButton.addEventListener('click', () => {
+  playButton.style.display = 'none';
+  initializePlayer();
+});

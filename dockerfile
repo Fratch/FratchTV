@@ -1,21 +1,19 @@
 # Dockerfile
-# Use an official Node.js runtime as a base image
-FROM node:14
+# Stage 1: Build
+FROM node:18 AS build
 
-# Set the working directory inside the container
 WORKDIR /app
-
-# Copy package.json and package-lock.json to the container
 COPY package*.json ./
-
-# Install Node.js dependencies
 RUN npm install
-
-# Copy the rest of the application files to the container
 COPY . .
 
-# Expose the port that the application will run on
-EXPOSE 1997
+# Stage 2: Run
+FROM node:18-slim
 
-# Define the command to run the application
+WORKDIR /app
+COPY --from=build /app ./
+RUN npm prune --production
+
+EXPOSE 1997
 CMD ["node", "index.js"]
+
