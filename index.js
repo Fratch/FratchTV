@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = 1997;
@@ -11,11 +12,19 @@ app.use(cors());
 app.use(express.static('public'));
 app.use('/video', express.static(videoFolder));
 
+// Set up rate limiter: maximum 100 requests per 15 minutes per IP
+const videosLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false,  // Disable the `X-RateLimit-*` headers
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/videos', async (req, res) => {
+app.get('/videos', videosLimiter, async (req, res) => {
     try {
         const folderExists = await fs.access(videoFolder).then(() => true).catch(() => false);
         if (!folderExists) {
