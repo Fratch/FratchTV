@@ -20,7 +20,15 @@ const videosLimiter = rateLimit({
     legacyHeaders: false,  // Disable the `X-RateLimit-*` headers
 });
 
-app.get('/', (req, res) => {
+// Set up rate limiter for root route: maximum 100 requests per 15 minutes per IP
+const rootLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.get('/', rootLimiter, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
