@@ -13,7 +13,8 @@ async function fetchAndShuffleVideos() {
     if (!response.ok) {
       throw new Error('Failed to fetch videos from the server');
     }
-    const videos = await response.json();
+    const payload = await response.json();
+    const videos = Array.isArray(payload) ? payload : payload.videos;
     if (!Array.isArray(videos) || videos.length === 0) {
       throw new Error('No videos available');
     }
@@ -30,7 +31,12 @@ async function fetchAndShuffleVideos() {
  * @returns {Array} - The shuffled array.
  */
 function shuffleArray(array) {
-  return array.sort(() => Math.random() - 0.5);
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 /**
@@ -43,17 +49,44 @@ function playNextVideo() {
   }
 
   const currentVideo = videoQueue[currentIndex];
-  videoPlayer.src({ src: `/video/${encodeURIComponent(currentVideo)}`, type: 'video/mp4' });
+  const videoSource = typeof currentVideo === 'string' ? `/video/${encodeURI(currentVideo)}` : currentVideo.url;
+  const videoName = typeof currentVideo === 'string' ? currentVideo : currentVideo.filename;
+  videoPlayer.src({
+    src: videoSource,
+    type: getMimeType(videoName),
+  });
   videoPlayer.play();
 
   currentIndex = (currentIndex + 1) % videoQueue.length;
 }
 
 /**
+ * Get a basic MIME type for the video file.
+ * @param {string} filename
+ * @returns {string}
+ */
+function getMimeType(filename) {
+  const extension = filename.split('.').pop()?.toLowerCase();
+  switch (extension) {
+    case 'webm':
+      return 'video/webm';
+    case 'mkv':
+      return 'video/x-matroska';
+    case 'avi':
+      return 'video/x-msvideo';
+    case 'mp4':
+    default:
+      return 'video/mp4';
+  }
+}
+
+/**
  * Handle video playback errors by skipping to the next video.
  */
 function handleVideoError() {
-  console.error(`Error loading video: ${videoQueue[currentIndex]}`);
+  const currentVideo = videoQueue[currentIndex];
+  const videoName = typeof currentVideo === 'string' ? currentVideo : currentVideo.filename;
+  console.error(`Error loading video: ${videoName}`);
   playNextVideo();
 }
 
