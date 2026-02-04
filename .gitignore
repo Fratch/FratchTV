@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -129,6 +128,7 @@ dmypy.json
 .pyre/
 *.mp4
 .node_modules
+node_modules/
 .DS_Store
 *.mkv
 *.webm

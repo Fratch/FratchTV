@@ -8,7 +8,8 @@ These instructions will help you set up and run the Fratch TV application.
 
 ### Prerequisites
 
-Make sure you have Docker installed on your machine.
+- Node.js 18+ (for local development without Docker)
+- Docker (optional, only if you want to run via container)
 
 ### Building the Docker Image
 
@@ -22,6 +23,15 @@ docker build -t fratch-tv .
 docker run -p 1997:1997 fratch-tv
 ```
 
+### Running locally (no Docker)
+
+```bash
+npm install
+npm start
+```
+
+Open http://localhost:1997 in your browser.
+
 ## Usage
 Access the Fratch TV application by opening http://localhost:1997 in your web browser. The application allows you to play random videos with basic controls.
 
@@ -30,10 +40,22 @@ Access the Fratch TV application by opening http://localhost:1997 in your web br
 - index.js: Node.js server code that handles video playback and server configuration.
 - public/index.html: HTML file for the web page served by the Node.js server.
 - public/scripts/playVideos.js: JavaScript file containing the logic for playing videos randomly.
-- video/: Directory to store video files.
+- videos/: Directory to store video files.
 Additional Information
 The application uses Video.js for video playback.
-Video files are expected to be in the video/ directory and should have extensions like .mp4, .avi, .mkv, or .webm.
+### Scheduling folders
+
+FratchTV can load videos based on the current date/time. Create folders inside `videos/` using these rules:
+
+- `videos/<namedDateInterval>/<namedTimeInterval>/` (highest priority)
+- `videos/<namedDateInterval>/`
+- `videos/<namedTimeInterval>/`
+- `videos/default/` (fallback)
+
+Intervals are configured in `config.json`. For example, during `natale` + `sera`, videos inside
+`videos/natale/sera` are added first, then `videos/natale`, then `videos/sera`, then `videos/default`.
+
+Video files should have extensions like `.mp4`, `.avi`, `.mkv`, or `.webm`.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.md file for details.

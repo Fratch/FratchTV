@@ -6,7 +6,10 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = 1997;
-const videoFolder = path.join(__dirname, 'videos'); // Correct path to 'videos' folder
+const videoFolder = path.join(__dirname, 'videos');
+const configPath = path.join(__dirname, 'config.json');
+const config = require(configPath);
+const { buildPriorityList, createVideoEntry, isVideoFile, sortByDeterministicShuffle } = require('./lib/scheduling');
 
 app.use(cors());
 app.use(express.static('public'));
@@ -40,25 +43,31 @@ app.get('/videos', videosLimiter, async (req, res) => {
             return res.status(404).json({ error: 'Video folder not found' });
         }
 
-        const files = await fs.readdir(videoFolder);
-        const videoFiles = filterVideoFiles(files);
+        const scheduleDate = getScheduleDate(req);
+        const priorities = buildPriorityList({
+            date: scheduleDate,
+            namedDateIntervals: config.namedDateIntervals,
+            namedTimeIntervals: config.namedTimeIntervals,
+        });
 
-        if (videoFiles.length === 0) {
-            console.warn('No videos found in the folder.');
+        const collectedVideos = await collectVideos(videoFolder, priorities);
+        if (collectedVideos.length === 0) {
+            console.warn('No videos found in the configured folders.');
             return res.status(404).json({ error: 'No videos available' });
         }
 
-        res.json(videoFiles);
+        const shuffledVideos = sortByDeterministicShuffle(collectedVideos, scheduleDate);
+        res.json({
+            date: scheduleDate.toISOString(),
+            priorities,
+            total: shuffledVideos.length,
+            videos: shuffledVideos,
+        });
     } catch (error) {
         console.error('Error reading video folder:', error);
         res.status(500).json({ error: 'Could not fetch videos' });
     }
 });
-
-function filterVideoFiles(files) {
-    const videoExtensions = ['.mp4', '.avi', '.mkv', '.webm'];
-    return files.filter(file => videoExtensions.some(ext => file.endsWith(ext)));
-}
 
 const server = app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
@@ -81,5 +90,68 @@ app.use((req, res) => {
     res.status(404).send('Not Found');
 });
 
-const configPath = path.join(__dirname, 'config.json');
-const config = require(configPath);
+async function collectVideos(rootFolder, priorities) {
+    const results = [];
+    const seen = new Set();
+
+    for (const priority of priorities) {
+        const folderPath = path.join(rootFolder, priority);
+        const entries = await readVideosFromFolder(folderPath, priority);
+        for (const entry of entries) {
+            if (!seen.has(entry.relativePath)) {
+                seen.add(entry.relativePath);
+                results.push(entry);
+            }
+        }
+    }
+
+    return results;
+}
+
+async function readVideosFromFolder(folderPath, relativeBase) {
+    try {
+        const stats = await fs.stat(folderPath);
+        if (!stats.isDirectory()) {
+            return [];
+        }
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return [];
+        }
+        throw error;
+    }
+
+    return walkVideoFiles(folderPath, relativeBase);
+}
+
+async function walkVideoFiles(folderPath, relativeBase) {
+    const entries = await fs.readdir(folderPath, { withFileTypes: true });
+    const videos = [];
+
+    for (const entry of entries) {
+        const entryPath = path.join(folderPath, entry.name);
+        const relativePath = path.join(relativeBase, entry.name);
+        if (entry.isDirectory()) {
+            const nestedVideos = await walkVideoFiles(entryPath, relativePath);
+            videos.push(...nestedVideos);
+        } else if (entry.isFile() && isVideoFile(entry.name)) {
+            videos.push(createVideoEntry('/video', relativePath));
+        }
+    }
+
+    return videos;
+}
+
+function getScheduleDate(req) {
+    const override = req.query.at;
+    if (!override) {
+        return new Date();
+    }
+
+    const parsed = new Date(override);
+    if (Number.isNaN(parsed.getTime())) {
+        return new Date();
+    }
+
+    return parsed;
+}
