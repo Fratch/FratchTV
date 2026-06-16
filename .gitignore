@@ -133,3 +133,4 @@ node_modules/
 *.mkv
 *.webm
 *.DS_Store
+*.mov
