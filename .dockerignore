@@ -1,0 +1,7 @@
+node_modules
+.git
+.github
+videos
+test
+*.md
+.DS_Store

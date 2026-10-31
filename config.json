@@ -1,4 +1,16 @@
 {
+  "ui": {
+    "defaultAspect": "16:9",
+    "aspectModes": ["16:9", "4:3", "screen"],
+    "logo": {
+      "enabled": true,
+      "src": "assets/logo.svg",
+      "position": "top-right",
+      "size": 12,
+      "margin": 2,
+      "opacity": 0.8
+    }
+  },
   "namedDateIntervals": [
     { "name": "estate", "start": "06-01", "end": "09-14" },
     { "name": "sanvalentino", "start": "02-14", "end": "02-14" },

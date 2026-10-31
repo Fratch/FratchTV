@@ -1,19 +1,19 @@
-# Dockerfile
-# Stage 1: Build
-FROM node:18 AS build
-
+# Stage 1: dipendenze
+FROM node:22 AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci --omit=dev
 COPY . .
 
-# Stage 2: Run
-FROM node:18-slim
-
+# Stage 2: run
+FROM node:22-slim
 WORKDIR /app
 COPY --from=build /app ./
-RUN npm prune --production
+
+ENV NODE_ENV=production \
+    VIDEOS_DIR=/videos
+VOLUME ["/videos"]
 
 EXPOSE 1997
+USER node
 CMD ["node", "index.js"]
-
