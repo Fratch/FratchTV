@@ -1,0 +1,17 @@
+services:
+  fratch-tv:
+    build: .
+    init: true                 # chiusura pulita con "docker compose stop"
+    restart: unless-stopped
+    ports:
+      - "1997:1997"
+    environment:
+      TZ: Europe/Rome
+      # TRUST_PROXY: "1"            # se c'è un proxy davanti (Caddy, Tailscale Funnel)
+      # AUTH_USER: "tv"             # password opzionale: imposta entrambe
+      # AUTH_PASS: "cambiami"
+      # ALLOW_TIME_OVERRIDE: "true" # solo per test: abilita /videos?at=2026-12-24T20:00:00
+    volumes:
+      # Imposta VIDEOS_PATH in un file .env accanto a questo (es. VIDEOS_PATH=/Users/nome/fratch-videos)
+      - ${VIDEOS_PATH:-./videos}:/videos:ro
+      - ./config.json:/app/config.json:ro

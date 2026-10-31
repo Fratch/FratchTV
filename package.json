@@ -1,18 +1,22 @@
 {
   "name": "fratchtv",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.1.0",
+  "description": "Canale TV personale: riproduce i video in ordine casuale con palinsesto per data e ora.",
   "main": "index.js",
   "scripts": {
     "test": "node --test",
     "start": "node index.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [],
   "author": "Fratch",
   "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.6",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.4.0"
+    "express-rate-limit": "^8.4.0",
+    "helmet": "^8.1.0",
+    "video.js": "^8.23.0"
   }
 }

@@ -1,22 +1,30 @@
 {
+  "timezone": "Europe/Rome",
   "ui": {
     "defaultAspect": "16:9",
     "aspectModes": ["16:9", "4:3", "screen"],
+    "idleSeconds": 3,
     "logo": {
       "enabled": true,
-      "src": "assets/logo.svg",
+      "src": "/assets/logo.svg",
       "position": "top-right",
       "size": 12,
       "margin": 2,
-      "opacity": 0.8
+      "opacity": 0.7
     }
+  },
+  "playlist": {
+    "scheduledWeight": 0.6,
+    "length": 50,
+    "minGap": 5
   },
   "namedDateIntervals": [
     { "name": "estate", "start": "06-01", "end": "09-14" },
     { "name": "sanvalentino", "start": "02-14", "end": "02-14" },
     { "name": "inverno", "start": "12-21", "end": "03-19" },
     { "name": "natale", "start": "12-01", "end": "12-26" },
-    { "name": "halloween", "start": "10-30", "end": "10-31" }
+    { "name": "halloween", "start": "10-30", "end": "10-31" },
+    { "name": "compleanno", "start": "01-01", "end": "01-01", "enabled": false }
   ],
   "namedTimeIntervals": [
     { "name": "giorno", "start": "06:00", "end": "18:59" },
