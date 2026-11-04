@@ -55,8 +55,8 @@ const scanCacheMs = envNumber("VIDEOS_CACHE_SECONDS", 45) * 1000;
 
 const playlistOptions = {
   length: Number(config.playlist?.length) || 50,
-  scheduledWeight: config.playlist?.scheduledWeight ?? 0.6,
   minGap: config.playlist?.minGap ?? 5,
+  wholeCycles: true,
 };
 
 const MAX_FOLDER_DEPTH = 8;

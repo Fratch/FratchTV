@@ -204,22 +204,17 @@ test("buildPlaylist restituisce [] con input vuoto o length non positiva", () =>
   assert.deepEqual(buildPlaylist(videos, { length: -1 }), []);
 });
 
-test("buildPlaylist usa il sacchetto disponibile quando manca l'altro gruppo", () => {
-  const onlyScheduled = buildPlaylist(makeVideos(3, true), {
-    seed: 1,
-    length: 10,
-    scheduledWeight: 0.6,
-    minGap: 1,
-  });
-  assert.equal(onlyScheduled.length, 10);
-  assert.ok(onlyScheduled.every((v) => v.scheduled));
-
-  const onlyFallback = buildPlaylist(makeVideos(3, false), {
-    seed: 1,
-    length: 10,
-    scheduledWeight: 0.6,
-    minGap: 1,
-  });
-  assert.equal(onlyFallback.length, 10);
-  assert.ok(onlyFallback.every((v) => !v.scheduled));
+test("i video specifici escono una volta per ciclo e sono ben distribuiti", () => {
+  const videos = [...makeVideos(5, true, "n"), ...makeVideos(95, false, "f")];
+  for (let seed = 1; seed <= 50; seed += 1) {
+    const playlist = buildPlaylist(videos, { seed, length: 300, minGap: 5 });
+    for (const cycle of cycles(playlist, 100)) {
+      assert.equal(new Set(cycle).size, 100, "ripetizione dentro un ciclo");
+      const pos = cycle.map((u, i) => (u.includes("/n") ? i : -1)).filter((i) => i >= 0);
+      assert.equal(pos.length, 5);
+      pos.forEach((p, k) => {
+        assert.ok(p >= k * 20 && p < (k + 1) * 20, `n${k} fuori fascia: ${p}`);
+      });
+    }
+  }
 });
