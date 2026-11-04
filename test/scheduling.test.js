@@ -235,3 +235,44 @@ test('buildPlaylist handles empty, single-group and single-video pools', () => {
   assert.equal(single.length, 5);
   assert.equal(new Set(single.map((v) => v.url)).size, 1);
 });
+
+/* -------------------------------------------------------------------------- */
+/* NUOVI TEST INTEGRATI: Controllo pesi eccessivi e cartella notte / specifici  */
+/* -------------------------------------------------------------------------- */
+
+test('buildPlaylist does not cluster all scheduled (notte) videos at the very beginning', () => {
+  // Simuliamo un pool con pochi video specifici (es. notte) e molti di default
+  const notteVideos = makeVideos(5, true, 'notte/');
+  const defaultVideos = makeVideos(30, false, 'default/');
+  const pool = [...notteVideos, ...defaultVideos];
+
+  const playlist = buildPlaylist(pool, { seed: 123, length: 50 });
+
+  // Controlliamo i primi 6 video generati all'accensione
+  const firstSix = playlist.slice(0, 6);
+  const scheduledCountInFirstSix = firstSix.filter((v) => v.scheduled).length;
+
+  // Se i pesi fossero sbilanciati in blocco, troveremmo quasi tutti i video scheduled all'inizio.
+  // Con una corretta distribuzione e shuffle, non dovrebbero saturare interamente l'avvio.
+  assert.ok(
+    scheduledCountInFirstSix < 6,
+    `I video specifici (notte) sono troppo pesanti e si ammassano tutti all'inizio: ${scheduledCountInFirstSix}/6`
+  );
+});
+
+test('unique pool generation prevents duplicate entries when folder hierarchies overlap', () => {
+  const duplicateEntry = { url: '/video/notte/shared.mp4', scheduled: true };
+  
+  // Simuliamo la deduplicazione a monte (tramite Set o filter) tipica della fusione cartelle
+  const rawPool = [duplicateEntry, duplicateEntry, ...makeVideos(10, false, 'default/')];
+  const uniquePool = Array.from(new Map(rawPool.map(v => [v.url, v])).values());
+
+  const playlist = buildPlaylist(uniquePool, { seed: 77, length: 20 });
+  
+  // Verifica che non ci siano ripetizioni consecutive immediate nella playlist pulita
+  for (let i = 1; i < playlist.length; i++) {
+    if (playlist[i].url === playlist[i - 1].url) {
+      assert.fail(`Trovata ripetizione consecutiva immediata del video: ${playlist[i].url} alla posizione ${i}`);
+    }
+  }
+});
